@@ -1,0 +1,78 @@
+install.packages("gdata")
+library(gdata)
+
+View(wine)
+pca<- princomp(wine[,2:14],cor= TRUE, scores = TRUE, covmat = NULL)
+summary(pca)
+
+
+
+normalized <-scale(wine[2:14])
+View(normalized)
+
+d<- dist(normalized , method="euclidean")
+fit<- hclust(d, method = "complete")
+plot(fit)
+plot(fit,hang = -1)
+
+rect.hclust(fit, k =7 ,border = "RED")
+groups<-cutree(fit, k = 7)
+
+type<-as.matrix(groups)
+type
+
+pca$scores[,2:4]
+wine<-cbind(wine,pca$scores[,2:4])
+View(wine)
+###
+clust_data<- wine[,15:17]
+normalized_1<- scale(clust_data)
+d1<- dist(normalized_1,method = "euclidean")
+fit_1<-hclust(d1,method = "complete")
+plot(fit_1,hang = -1)
+
+rect.hclust(fit_1,k=7,border = "RED")
+groups_1<- cutree(fit_1,k = 7)
+
+type_1<- as.matrix(groups_1)
+wine_1<- cbind(type_1,wine)
+View(wine_1)
+
+
+
+##### K_Means####
+
+install.packages("plyr")
+library(plyr)
+
+install.packages("animation")
+library(animation)
+
+
+View(wine_1)
+norm_data <- scale(wine_1[,15:17])
+
+#Scree Plot 
+wss =(nrow(norm_data)-1)*sum(apply(norm_data, 2, var)) 
+for (i in 1:7) wss[i] = sum(kmeans(norm_data, centers=i)$withinss)
+plot(1:7, wss, type="b", xlab="Number of Clusters", ylab="Sum of squares")
+
+#K-means using value of k = 7
+kn<-kmeans.ani(norm_data,7)
+table(kn$cluster)
+
+
+###########Using Different Parameters######
+#using manhattan distance and average linkage
+
+d2<-dist(normalized_1,method = "manhattan")
+fit_2<-hclust(d2,method="average") #Hierarchical clustering Using average linkage
+plot(fit_2)
+
+rect.hclust(fit_2, k=8, border="RED")
+groups<-cutree(fit_2,8)
+
+#Form the clusters
+type_2 <-as.matrix(groups)
+wine_2 <-cbind(type_2,wine)
+View(wine_2)
